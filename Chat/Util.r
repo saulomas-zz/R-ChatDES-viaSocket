@@ -259,3 +259,52 @@ xorB = function(data1, data2) {
 
 B = xorB(eR0, k1)
 
+bMatrix = matrix(B, 8, 6, byrow = TRUE)
+
+funcRowSbox = function(data) {
+    return((data[1] * 2 ^ 1) + (data[6] * 2 ^ 0))
+}
+
+funcColSbox = function(data) {
+    return((data[2] * 2 ^ 3) + (data[3] * 2 ^ 2) + (data[4] * 2 ^ 1) + (data[5] * 2 ^ 0))
+}
+
+newB = function(valorSBox) {
+    tempB = numeric(4)
+
+    resultadoDiv = 0
+    countTemp = 4
+    repeat {
+        resultadoDiv = valorSBox %/% 2
+        tempB[countTemp] = valorSBox %% 2
+
+        if (resultadoDiv == 0) {
+            break
+        }
+
+
+        valorSBox = resultadoDiv
+        countTemp = countTemp - 1
+    }
+
+    return(tempB)
+}
+
+funcF = function(bMatrix) {
+    tempF = numeric()
+
+    for (i in 1:8) {
+        rowSbox = funcRowSbox(bMatrix[i,])
+        colSbox = funcColSbox(bMatrix[i,])
+
+        valorSBox = sBox[[i]][[rowSbox + 1]][[colSbox + 1]]
+
+        bN = newB(valorSBox)
+
+        tempF = c(tempF, bN)
+    }
+
+    return(tempF)
+}
+
+f = funcF(bMatrix)
