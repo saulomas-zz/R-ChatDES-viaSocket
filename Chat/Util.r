@@ -137,10 +137,14 @@ rm(sBox1, sBox2, sBox3, sBox4, sBox5, sBox6, sBox7, sBox8)
 #PermutedChoice
 
 pBox = c(
-    16,  7, 20, 21, 29, 12, 28, 17,
-     1, 15, 23, 26,  5, 18, 31, 10,
-     2,  8, 24, 14, 32, 27,  3,  9,
-    19, 13, 30,  6, 22, 11,  4, 25)
+    16,  7, 20, 21, 
+    29, 12, 28, 17,
+     1, 15, 23, 26, 
+     5, 18, 31, 10,
+     2,  8, 24, 14, 
+    32, 27,  3,  9,
+    19, 13, 30,  6, 
+    22, 11,  4, 25)
 
 permute = function(data, initial) {
     dataTemp = c(1:64)
@@ -307,4 +311,18 @@ funcF = function(bMatrix) {
     return(tempF)
 }
 
-f = funcF(bMatrix)
+r = funcF(bMatrix)
+
+permutePbox = function(data) {
+    dataTemp = c(1:32)
+
+    for(i in 1:32) {
+        dataTemp[i] = data[pBox[i]]           
+    }
+
+    return(dataTemp)
+}
+
+p = permutePbox(r)
+
+print(p)
