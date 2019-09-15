@@ -1,4 +1,4 @@
-# R-ChatRSA-viaSocket
+# R-ChatDES-viaSocket
 
 Esse trabalho consistiu na criação de aplicações cliente/servidor que troquem mensagens utilizando o algoritmo de criptografia **<a href="https://pt.wikipedia.org/wiki/Data_Encryption_Standard">DES</a>** em **<a href="https://www.r-project.org/">R</a>** via **<a href="https://pt.wikipedia.org/wiki/Soquete_de_rede">Socket</a>**
 
