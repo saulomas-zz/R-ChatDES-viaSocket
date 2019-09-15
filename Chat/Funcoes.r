@@ -1,6 +1,6 @@
 source("Constantes.r")
 
-permuteInput = function(data, initial) {
+permute = function(data, initial) {
     dataTemp = c(1:64)
 
     for(i in 1:64) {
@@ -75,7 +75,7 @@ shifter = function(data, round) {
                     posCol[k] = posCol[k] + 1
             }
         #}
-        
+
         col = col[c(posCol)] 
 
         newMatrix = cbind(newMatrix, col)
@@ -94,7 +94,7 @@ shifter = function(data, round) {
     return(as.vector(t(newMatrix)))
 }
 
-xorB = function(data1, data2) {
+xorBit = function(data1, data2) {
     if (length(data1) == length(data2)) {
         dataXOR = c(1:length(data1))
 
@@ -110,48 +110,47 @@ xorB = function(data1, data2) {
     }
 }
 
-funcRowSbox = function(data) {
+getRowSbox = function(data) {
     return((data[1] * 2 ^ 1) + (data[6] * 2 ^ 0))
 }
 
-funcColSbox = function(data) {
+getColSbox = function(data) {
     return((data[2] * 2 ^ 3) + (data[3] * 2 ^ 2) + (data[4] * 2 ^ 1) + (data[5] * 2 ^ 0))
 }
 
-newB = function(valorSBox) {
-    tempB = numeric(4)
+getNewBitsByValueSbox = function(valueSbox) {
+    tempNewBits = numeric(4)
 
-    resultadoDiv = 0
+    resultDiv = 0
     countTemp = 4
     repeat {
-        resultadoDiv = valorSBox %/% 2
-        tempB[countTemp] = valorSBox %% 2
+        resultDiv = valueSbox %/% 2
+        tempNewBits[countTemp] = valueSbox %% 2
 
-        if (resultadoDiv == 0) {
+        if (resultDiv == 0) {
             break
         }
 
-
-        valorSBox = resultadoDiv
+        valueSbox = resultDiv
         countTemp = countTemp - 1
     }
 
-    return(tempB)
+    return(tempNewBits)
 }
 
-funcF = function(bMatrix) {
-    tempF = numeric()
+resultXORBySbox = function(resultXORmatrix) {
+    tempResult = numeric()
 
     for (i in 1:8) {
-        rowSbox = funcRowSbox(bMatrix[i,])
-        colSbox = funcColSbox(bMatrix[i,])
+        rowSbox = getRowSbox(resultXORmatrix[i,])
+        colSbox = getColSbox(resultXORmatrix[i,])
 
-        valorSBox = sBox[[i]][[rowSbox + 1]][[colSbox + 1]]
+        valueSbox = sBox[[i]][[rowSbox + 1]][[colSbox + 1]]
 
-        bN = newB(valorSBox)
+        bN = getNewBitsByValueSbox(valueSbox)
 
-        tempF = c(tempF, bN)
+        tempResult = c(tempResult, bN)
     }
 
-    return(tempF)
+    return(tempResult)
 }
