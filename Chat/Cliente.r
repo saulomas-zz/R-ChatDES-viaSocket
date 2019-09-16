@@ -16,9 +16,6 @@ client <- function() {
         open(f)
         writeLines("Digite uma chave de 8 caracteres que será usada para Criptografia e Decriptografia", sep=": ")
         key <- readLines(f, n=1)
-        if(tolower(key)=="q"){
-            break
-        }
 
         if (nchar(key) == 8) {
             break

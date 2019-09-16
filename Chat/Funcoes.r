@@ -4,58 +4,35 @@ source("Constantes.r")
 ## Funções de Permutação
 ## --------------------------------------------------------------------
 
-permute = function(data, initial) {
-    dataTemp = c(1:64)
+permuteAll = function(data, opcao) {
+    dataRef = NULL
 
-    for(i in 1:64) {
-        if (initial) {
-            dataTemp[i] = data[permIni[i]]
-        } else {
-            dataTemp[i] = data[permFim[i]]
+    switch(opcao, 
+        initial={
+            dataRef = permIni
+        }, pc1={
+            dataRef = pc1 
+        }, pc2={
+            dataRef = pc2
+        }, dbox={
+            dataRef = dBox
+        }, pbox={
+            dataRef = pBox  
+        }, final={
+            dataRef =  permFim
+        }, {
+            return = dataRef
         }
+    )
+
+    dataRefLen = length(dataRef)
+    dataPerm = numeric(dataRefLen)
+
+    for(i in 1:dataRefLen) {
+        dataPerm[i] = data[dataRef[i]]
     }
 
-    return(dataTemp)
-}
-
-permuteChoice1 = function(data) {
-    dataTemp = c(1:56)
-
-    for(i in 1:56) {
-        dataTemp[i] = data[pc1[i]]           
-    }
-
-    return(dataTemp)
-}
-
-permuteChoice2 = function(data) {
-    dataTemp = c(1:48)
-
-    for(i in 1:48) {
-        dataTemp[i] = data[pc2[i]]           
-    }
-
-    return(dataTemp)
-}
-
-permuteDbox = function(data) {
-    dataTemp = c(1:48)
-
-    for(i in 1:48) {
-        dataTemp[i] = data[dBox[i]]           
-    }
-
-    return(dataTemp)
-}
-
-permutePbox = function(data) {
-    dataTemp = c(1:32)
-
-    for(i in 1:32) {
-        dataTemp[i] = data[pBox[i]]           
-    }
-
-    return(dataTemp)
+    return(dataPerm)
 }
 
 ## --------------------------------------------------------------------
@@ -168,13 +145,13 @@ resultXORBySbox = function(resultXORmatrix) {
 }
 
 funcF = function(rTemp, kI) {
-    e_rTemp = permuteDbox(rTemp)
+    e_rTemp = permuteAll(rTemp, 'dbox')
 
     resultXOR = xorBit(e_rTemp, kI)
     resultXORmatrix = matrix(resultXOR, 8, 6, byrow = TRUE)
 
     outSbox = resultXORBySbox(resultXORmatrix)
-    outSboxPerm = permutePbox(outSbox)
+    outSboxPerm = permuteAll(outSbox, 'pbox')
 
     return(outSboxPerm)
 }
@@ -184,10 +161,10 @@ funcF = function(rTemp, kI) {
 ## --------------------------------------------------------------------
 
 encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
-    inputTextInBitsNumPerm = permute(inputTextInBitsNum, initial = TRUE)
+    inputTextInBitsNumPerm = permuteAll(inputTextInBitsNum, 'initial')
 
     inputKeyInBitsNum = keyInBitsNum(key)
-    inputKeyInBitsNumPerm = permuteChoice1(inputKeyInBitsNum)
+    inputKeyInBitsNumPerm = permuteAll(inputKeyInBitsNum, 'pc1')
 
     c0 = chunk(inputKeyInBitsNumPerm, 2)[[1]]
     d0 = chunk(inputKeyInBitsNumPerm, 2)[[2]]
@@ -211,7 +188,7 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
 
     kI = list()
     for (i in 1:16) {
-        k = permuteChoice2(c(cI[[i]],dI[[i]]))
+        k = permuteAll(c(cI[[i]],dI[[i]]), 'pc2')
 
         kI = c(kI, list(k))
     }
@@ -258,7 +235,7 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
     rm(lTemp, rTemp, l, r)
 
     l16r16inverted = c(rI[[16]],lI[[16]])
-    l16r16invertedPerm = permute(l16r16inverted, initial = FALSE)
+    l16r16invertedPerm = permuteAll(l16r16inverted, 'final')
     l16r16invertedPermRaw = as.raw(l16r16invertedPerm)
     ## View(matrix(l16r16invertedPerm, 8, 8, byrow = TRUE))
     
