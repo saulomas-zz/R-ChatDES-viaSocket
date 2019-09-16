@@ -4,10 +4,11 @@
 
 source("Funcoes.r")
 
-# inputTextInBitsNum = c(0,1,0,1,0,0,1,1,0,1,1,0,0,1,0,1,0,1,1,0,0,0,1,1,0,1,1,1,0,0,1,0,0,1,1,0,0,1,0,1,0,1,1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,1,0,1)
+#outputTextInBitsNum = c(0,1,0,1,0,0,1,1,0,1,1,0,0,1,0,1,0,1,1,0,0,0,1,1,0,1,1,1,0,0,1,0,0,1,1,0,0,1,0,1,0,1,1,1,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,1,0,1)
+# inputTextInBitsNum = c(0,1,1,1,1,0,1,1,1,1,0,1,0,0,1,0,0,0,0,0,1,0,1,1,1,0,1,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1,0,0,1,1,1,0,1,1,1,0)
 # inputTextInBitsNumPerm = permute(inputTextInBitsNum, initial = TRUE)
 
-encryptBlock = function(inputTextInBitsNum) {
+decryptBlock = function(inputTextInBitsNum) {
     inputTextInBitsNumPerm = permute(inputTextInBitsNum, initial = TRUE)
 
     inputKeyInBitsNum = c(0,0,1,1,0,1,1,0,0,0,1,1,0,1,0,0,0,1,1,0,0,0,1,0,0,1,1,0,1,0,0,1,0,1,1,1,0,1,0,0,0,1,0,0,1,0,1,1,0,1,1,0,0,1,0,1,0,1,1,1,1,0,0,1)
@@ -52,7 +53,7 @@ encryptBlock = function(inputTextInBitsNum) {
     lI = list()
     rI = list()
 
-    for(i in 1:16) {
+    for(i in 16:1) {
         l = rTemp
         r = xorBit(lTemp, funcF(rTemp, kI[[i]]))
 
@@ -71,33 +72,26 @@ encryptBlock = function(inputTextInBitsNum) {
     l16r16invertedPerm = permute(l16r16inverted, initial = FALSE)
 
     l16r16invertedPermRaw = as.raw(l16r16invertedPerm)
-    # View(matrix(l16r16invertedPerm, 8, 8, byrow = TRUE))
-    
-    return(packBits(l16r16invertedPermRaw, type = c("raw", "integer")))
+
+    return(rawToChar(packBits(l16r16invertedPermRaw, type = c("raw", "integer"))))
 }
 
-
-
-msgEncrypt = function(msg) {
-    msgInRaw = charToRaw(msg)
-    inputTextInRaw = msgInRaw
-
-    while (length(inputTextInRaw) %% 16 != 0) {
-        inputTextInRaw = c(inputTextInRaw, raw(1))
-    }
-    inputTextInBits = rawToBits(inputTextInRaw)
-    inputTextInBitsNum = as.numeric(inputTextInBits)
+msgDecrypt = function(msg) {
+    msgInBits = rawToBits(msg)
+    msgInBitsNum = as.numeric(msgInBits)
     
-    numBlocks = length(inputTextInBitsNum) / 64
-    blocksInMatrix = matrix(inputTextInBitsNum, numBlocks, 64, byrow = TRUE)
+    numBlocks = length(msgInBitsNum) / 64
+    blocksInMatrix = matrix(msgInBitsNum, numBlocks, 64, byrow = TRUE)
 
-    msgCiphered = NULL 
+    msgDeciphered = NULL 
     for(i in 1:numBlocks) {
-        msgCiphered = c(msgCiphered, encryptBlock(blocksInMatrix[i,]))
+        msgDeciphered = c(msgDeciphered, decryptBlock(blocksInMatrix[i,]))
     }
 
-    return(msgCiphered)
+    return(paste(msgDeciphered, collapse = ""))
 }
+
+# View(matrix(l16r16invertedPerm, 8, 8, byrow = TRUE))
 
 # M = 0123456789ABCDEF
 # inBlock = c(0,0,0,0,0,0,0,1,0,0,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1)

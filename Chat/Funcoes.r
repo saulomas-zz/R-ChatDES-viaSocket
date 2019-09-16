@@ -1,5 +1,7 @@
 source("Constantes.r")
 
+#region [ Funções de Permutação ]
+
 permute = function(data, initial) {
     dataTemp = c(1:64)
 
@@ -53,6 +55,10 @@ permutePbox = function(data) {
 
     return(dataTemp)
 }
+
+#endregion
+
+#region [ Funções de Apoio ]
 
 chunk = function(x,n) split(x, cut(seq_along(x), n, labels = FALSE)) 
 
@@ -110,6 +116,10 @@ xorBit = function(data1, data2) {
     }
 }
 
+#endregion
+
+#region [ Função-F ]
+
 getRowSbox = function(data) {
     return((data[1] * 2 ^ 1) + (data[6] * 2 ^ 0))
 }
@@ -154,3 +164,17 @@ resultXORBySbox = function(resultXORmatrix) {
 
     return(tempResult)
 }
+
+funcF = function(rTemp, kI) {
+    e_rTemp = permuteDbox(rTemp)
+
+    resultXOR = xorBit(e_rTemp, kI)
+    resultXORmatrix = matrix(resultXOR, 8, 6, byrow = TRUE)
+
+    outSbox = resultXORBySbox(resultXORmatrix)
+    outSboxPerm = permutePbox(outSbox)
+
+    return(outSboxPerm)
+}
+
+#endregion
