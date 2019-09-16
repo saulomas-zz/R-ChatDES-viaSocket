@@ -21,7 +21,7 @@ server <- function() {
 
     while(TRUE){
         writeLines("Escutando...")
-        con = socketConnection(host="localhost", port = 777, blocking=TRUE, server=TRUE, open="r+")
+        con = socketConnection(host="localhost", port=777, blocking=TRUE, server=TRUE, open="r+")
 
         ## Servidor recebe mensagem enviada do Cliente
         msgEncrypted = readLines(con, 1)

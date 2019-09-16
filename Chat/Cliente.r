@@ -51,7 +51,7 @@ client <- function() {
     ## --------------------------------------------------------------------    
     print("Chat Aberto!!!")
     while(TRUE){
-        con = socketConnection(host="localhost", port = 777, blocking=TRUE, server=FALSE, open="r+")
+        con = socketConnection(host="localhost", port=777, blocking=TRUE, server=FALSE, open="r+")
 
         ## Cliente captura mensagem da entrada padrao via Teclado
         fChat <- file("stdin")
