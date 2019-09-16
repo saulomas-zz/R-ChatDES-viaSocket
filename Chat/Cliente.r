@@ -1,45 +1,59 @@
-source("EncodeDecode_byDES.r")
-#O arquivo acima localizado na mesma pasta desse arquivo contém as funções:
-#=> De geração de chave (getChaveP, getChaveQ, getChaveN, getChaveNFi, getChaveE, getChaveD)
-#=> De criptografia e descriptografia (toMsgCrypt, toMsgDecrypt)
+source("Funcoes.r")
+
+## --------------------------------------------------------------------
+## O arquivo acima localizado na mesma pasta desse arquivo contém as 
+##            funções necessárias para os cálculos de criptografia e 
+##                                  descriptografia do algoritmo DES
+## --------------------------------------------------------------------
 
 client <- function() {
-    #--------------------------------------------------------------------
-    #Geração das Chaves Públicas e Privadas    
+    ## --------------------------------------------------------------------
+    ## --------------------------------------------------------------------
+    ## Chave que será usada para Encriptar e Decriptar a troca de Mensagens 
+    ## --------------------------------------------------------------------
+    repeat {
+        f <- file("stdin")
+        open(f)
+        writeLines("Digite uma chave de 8 caracteres que será usada para Criptografia e Decriptografia", sep=": ")
+        key <- readLines(f, n=1)
+        if(tolower(key)=="q"){
+            break
+        }
 
-    # repeat {
-    #     f <- file("stdin")
-    #     open(f)
-    #     writeLines("Digite uma chave de 8 caracteres que será usada para Criptografia e Decriptografia", sep=": ")
-    #     key <- readLines(f, n=1)
-    #     if(tolower(key)=="q"){
-    #         break
-    #     }
+        if (nchar(key) == 8) {
+            break
+        }
 
-    #     if (nchar(key) == 8) {
-    #         break
-    #     }
+        print("A chave deve conter 8 caracteres!")
+    }
 
-    #     print("A chave deve conter 8 caracteres!")
-    # }
+    ##--------------------------------------------------------------------
 
-    key = "saulomas"
+    ## Caso queira usar uma chave fixa, descomente a linha abaixo e comente 
+    ## todo o bloco "repeat" acima
+
+    #key = "saulomas" 
     
-    #--------------------------------------------------------------------
+    ## --------------------------------------------------------------------
+    ## --------------------------------------------------------------------
+
     print("Enviando Chave digitada para o Servidor")
     con <- socketConnection(host="localhost", port=666, blocking=TRUE, server=FALSE, open="r+")
 
-    # enviar a chave para o Servidor
+    # Envio da chave para o Servidor
     write_resp = writeLines(key, con)
 
     close(con)
-    #--------------------------------------------------------------------
 
+    ## --------------------------------------------------------------------
+    ## --------------------------------------------------------------------
+    ## Início do Chat 
+    ## --------------------------------------------------------------------    
     print("Chat Aberto!!!")
     while(TRUE){
         con = socketConnection(host="localhost", port = 777, blocking=TRUE, server=FALSE, open="r+")
 
-        # cliente captura mensagem da entrada padrao (teclado)
+        ## Cliente captura mensagem da entrada padrao via Teclado
         fChat <- file("stdin")
         open(fChat)
         writeLines("Mensagem", sep=": ")
@@ -48,22 +62,24 @@ client <- function() {
             break
         }
 
-        # cliente criptografa a mensagem e a envia para o servidor
+        ## Cliente criptografa a mensagem e a envia para o Servidor
         msgEncrypted = msgEncrypt(msg, key)
         msgEncryptedInChar = rawToChar(msgEncrypted)
-
         write_resp = writeLines(msgEncryptedInChar, con)
 
-        # cliente recebe mensagem enviada pelo servidor
+        ## Cliente recebe mensagem enviada do Servidor
         msgEncrypted = readLines(con, 1)
         msgEncryptedInRaw = charToRaw(msgEncrypted)
 
-        # cliente decriptografa a mensagem e a mostra na tela
-        # fazer aqui a decriptografia
+        ## Cliente decriptografa a mensagem e a mostra na tela
         msg = msgDecrypt(msgEncryptedInRaw, key)
         print(msg)
 
         close(con)    
     }
+    ## --------------------------------------------------------------------
+    ## Fim do Chat
+    ## --------------------------------------------------------------------
+    ## --------------------------------------------------------------------
 }
 client()

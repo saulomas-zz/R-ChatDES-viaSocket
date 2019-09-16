@@ -135,9 +135,9 @@ rm(sBox7l0, sBox7l1, sBox7l2, sBox7l3)
 rm(sBox8l0, sBox8l1, sBox8l2, sBox8l3)
 rm(sBox1, sBox2, sBox3, sBox4, sBox5, sBox6, sBox7, sBox8)
 
-# rm -> remove objetos
-# sBox[[1]][[1]][[1]] -> pega o primeiro elemento da primeira lista que está dentro da primeira lista
+## rm -> remove objetos
+## sBox[[1]][[1]][[1]] -> pega o primeiro elemento da primeira lista que está dentro da primeira lista
 
-#Permutation
-#ExpansionPermutation
-#PermutedChoice
+## Permutation
+## ExpansionPermutation
+## PermutedChoice
