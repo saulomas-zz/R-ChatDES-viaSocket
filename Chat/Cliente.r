@@ -7,22 +7,24 @@ client <- function() {
     #--------------------------------------------------------------------
     #Geração das Chaves Públicas e Privadas    
 
-    repeat {
-        f <- file("stdin")
-        open(f)
-        writeLines("Digite uma chave de 8 caracteres que será usada para Criptografia e Decriptografia", sep=": ")
-        key <- readLines(f, n=1)
-        if(tolower(key)=="q"){
-            break
-        }
+    # repeat {
+    #     f <- file("stdin")
+    #     open(f)
+    #     writeLines("Digite uma chave de 8 caracteres que será usada para Criptografia e Decriptografia", sep=": ")
+    #     key <- readLines(f, n=1)
+    #     if(tolower(key)=="q"){
+    #         break
+    #     }
 
-        if (nchar(key) == 8) {
-            break
-        }
+    #     if (nchar(key) == 8) {
+    #         break
+    #     }
 
-        print("A chave deve conter 8 caracteres!")
-    }
+    #     print("A chave deve conter 8 caracteres!")
+    # }
 
+    key = "saulomas"
+    
     #--------------------------------------------------------------------
     print("Enviando Chave digitada para o Servidor")
     con <- socketConnection(host="localhost", port=666, blocking=TRUE, server=FALSE, open="r+")
@@ -38,24 +40,27 @@ client <- function() {
         con = socketConnection(host="localhost", port = 777, blocking=TRUE, server=FALSE, open="r+")
 
         # cliente captura mensagem da entrada padrao (teclado)
-        f <- file("stdin")
-        open(f)
-        writeLines("msg", sep=": ")
-        msg <- readLines(f, n=1)
+        fChat <- file("stdin")
+        open(fChat)
+        writeLines("Mensagem", sep=": ")
+        msg <- readLines(fChat, n=1)
         if(tolower(msg)=="q"){
             break
         }
 
         # cliente criptografa a mensagem e a envia para o servidor
-        msgEncrypt = msgEncrypt(msg, key)
-        write_resp = writeLines(msgEncrypt, con)
+        msgEncrypted = msgEncrypt(msg, key)
+        msgEncryptedInChar = rawToChar(msgEncrypted)
+
+        write_resp = writeLines(msgEncryptedInChar, con)
 
         # cliente recebe mensagem enviada pelo servidor
-        msgEncrypt = readLines(con, 1)
-        
+        msgEncrypted = readLines(con, 1)
+        msgEncryptedInRaw = charToRaw(msgEncrypted)
+
         # cliente decriptografa a mensagem e a mostra na tela
         # fazer aqui a decriptografia
-        msg = msgDecrypt(msgEncrypt, key)
+        msg = msgDecrypt(msgEncryptedInRaw, key)
         print(msg)
 
         close(con)    

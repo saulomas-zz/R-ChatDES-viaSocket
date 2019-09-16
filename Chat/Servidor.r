@@ -21,18 +21,18 @@ server <- function() {
         con = socketConnection(host="localhost", port = 777, blocking=TRUE, server=TRUE, open="r+")
 
         # servidor recebe mensagem enviada pelo cliente
-        msgCrypt = readLines(con, 1)
-        print(msgCrypt)
-        
+        msgEncrypted = readLines(con, 1)
+        msgEncryptedInRaw = charToRaw(msgEncrypted)
+
         # servidor decriptografa a mensagem e a mostra na tela
         # fazer aqui a decriptografia
-        msg = msgDecrypt(msgCrypt, key)
+        msg = msgDecrypt(msgEncryptedInRaw, key)
         print(msg)
         
         # servidor captura mensagem da entrada padrao (teclado)
         f = file("stdin")
         open(f)
-        writeLines("msg", sep=": ")
+        writeLines("Mensagem", sep=": ")
         msg <- readLines(f, n=1)
         if(tolower(msg)=="q"){
             break
@@ -40,8 +40,9 @@ server <- function() {
         
         # servidor criptografa a mensagem e a envia para o cliente
         # fazer aqui a criptografia
-        msgCrypt = msgEncrypt(msg, key)
-        write_resp <- writeLines(msgCrypt, con)
+        msgEncrypted = msgEncrypt(msg, key)
+        msgEncryptedInChar = rawToChar(msgEncrypted)
+        write_resp <- writeLines(msgEncryptedInChar, con)
 
         close(con)
     }
