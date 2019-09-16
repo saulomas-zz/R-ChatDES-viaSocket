@@ -34,7 +34,7 @@ server <- function() {
         ## Servidor captura mensagem da entrada padrao via Teclado
         f = file("stdin")
         open(f)
-        writeLines("Mensagem", sep=": ")
+        writeLines("Digite sua mensagem", sep=": ")
         msg <- readLines(f, n=1)
         if(tolower(msg)=="q"){
             break

@@ -56,7 +56,7 @@ client <- function() {
         ## Cliente captura mensagem da entrada padrao via Teclado
         fChat <- file("stdin")
         open(fChat)
-        writeLines("Mensagem", sep=": ")
+        writeLines("Digite sua mensagem", sep=": ")
         msg <- readLines(fChat, n=1)
         if(tolower(msg)=="q"){
             break
