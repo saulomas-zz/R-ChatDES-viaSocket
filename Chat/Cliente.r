@@ -1,4 +1,4 @@
-source("Util.r")
+source("EncodeDecode_byDES.r")
 #O arquivo acima localizado na mesma pasta desse arquivo contém as funções:
 #=> De geração de chave (getChaveP, getChaveQ, getChaveN, getChaveNFi, getChaveE, getChaveD)
 #=> De criptografia e descriptografia (toMsgCrypt, toMsgDecrypt)
@@ -6,37 +6,36 @@ source("Util.r")
 client <- function() {
     #--------------------------------------------------------------------
     #Geração das Chaves Públicas e Privadas    
-    print("Geracao da Chave Publica")
-    cli_p = getChaveP()
-    cli_q = getChaveQ(cli_p)
-    cli_n = getChaveN(cli_p, cli_q)
-    cli_n_fi = getChaveNFi(cli_p, cli_q)
-    cli_e = getChaveE(cli_n_fi)
-    cli_d = getChaveD(cli_n_fi, cli_e)    
+
+    repeat {
+        f <- file("stdin")
+        open(f)
+        writeLines("Digite uma chave de 8 caracteres que será usada para Criptografia e Decriptografia", sep=": ")
+        key <- readLines(f, n=1)
+        if(tolower(key)=="q"){
+            break
+        }
+
+        if (nchar(key) == 8) {
+            break
+        }
+
+        print("A chave deve conter 8 caracteres!")
+    }
+
     #--------------------------------------------------------------------
-    print("Troca de chaves")
-    #kpuc = c(cli_n,cli_e)
-    kpuc = paste(c(cli_n, cli_e), collapse = ",")
+    print("Enviando Chave digitada para o Servidor")
     con <- socketConnection(host="localhost", port=666, blocking=TRUE, server=FALSE, open="r+")
 
-    # enviar a chave publica do cliente
-    write_resp = writeLines(kpuc, con)
-
-    # receber a chave publica do servidor
-    kpus = readLines(con,1)
-    print(kpus)    
-
-    serv_n = as.integer(unlist(strsplit(kpus, split=",")))[1]
-    serv_e = as.integer(unlist(strsplit(kpus, split=",")))[2]
+    # enviar a chave para o Servidor
+    write_resp = writeLines(key, con)
 
     close(con)
     #--------------------------------------------------------------------
-    rm(kpuc)
-    rm(kpus)
-    #--------------------------------------------------------------------
 
+    print("Chat Aberto!!!")
     while(TRUE){
-        con = socketConnection(host="localhost", port = 666, blocking=TRUE, server=FALSE, open="r+")
+        con = socketConnection(host="localhost", port = 777, blocking=TRUE, server=FALSE, open="r+")
 
         # cliente captura mensagem da entrada padrao (teclado)
         f <- file("stdin")
@@ -46,17 +45,17 @@ client <- function() {
         if(tolower(msg)=="q"){
             break
         }
-        
+
         # cliente criptografa a mensagem e a envia para o servidor
-        msgCrypt = toMsgCrypt(msg, serv_e, serv_n)
-        write_resp = writeLines(msgCrypt, con)
+        msgEncrypt = msgEncrypt(msg, key)
+        write_resp = writeLines(msgEncrypt, con)
 
         # cliente recebe mensagem enviada pelo servidor
-        msgCrypt = readLines(con, 1)
+        msgEncrypt = readLines(con, 1)
         
         # cliente decriptografa a mensagem e a mostra na tela
         # fazer aqui a decriptografia
-        msg = toMsgDecrypt(msgCrypt, cli_d, cli_n)
+        msg = msgDecrypt(msgEncrypt, key)
         print(msg)
 
         close(con)    
