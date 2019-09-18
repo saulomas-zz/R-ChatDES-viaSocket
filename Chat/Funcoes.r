@@ -46,14 +46,14 @@ permuteAll = function(data, opcao) {
 ## ---------------------------------------------------------- ##
 
 ## ---------------------------------------------------------- ##
-## Divide um velor "x" em "n" pedaços                         ##
+## Divide um vetor "x" em "n" pedaços                         ##
 ## ---------------------------------------------------------- ##
 
 chunk = function(x,n) split(x, cut(seq_along(x), n, labels = FALSE)) 
 
 ## ---------------------------------------------------------- ##
 ## Função para rotação em valores de 28 bits a partir das     ##
-## subchaves de rotação
+## subchaves de rotação                                       ##
 ## ---------------------------------------------------------- ##
 
 shifter = function(data, round) {
@@ -180,14 +180,16 @@ feistel = function(rTemp, kI) {
 ## Criptografia e Descriptografia                             ##
 ## ---------------------------------------------------------- ##
 
-encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
-    inputTextInBitsNumPerm = permuteAll(inputTextInBitsNum, 'initial')
+encodeDecode = function(msgBlock, key, encode = TRUE) {
+    msgBlockPerm = permuteAll(msgBlock, 'initial')
+    keyPerm = permuteAll(key, 'pc1')
 
-    inputKeyInBitsNum = keyInBitsNum(key)
-    inputKeyInBitsNumPerm = permuteAll(inputKeyInBitsNum, 'pc1')
+## ---------------------------------------------------------- ##
+## Geração das subchaves                                      ##
+## ---------------------------------------------------------- ##
 
-    c0 = chunk(inputKeyInBitsNumPerm, 2)[[1]]
-    d0 = chunk(inputKeyInBitsNumPerm, 2)[[2]]
+    c0 = chunk(keyPerm, 2)[[1]]
+    d0 = chunk(keyPerm, 2)[[2]]
 
     cTemp = c0
     dTemp = d0
@@ -206,6 +208,10 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
         dTemp = d
     }
 
+## ---------------------------------------------------------- ##
+## Geração das chaves finais permutando-as com a tabela "pc2" ##
+## ---------------------------------------------------------- ##
+
     kI = list()
     for (i in 1:16) {
         k = permuteAll(c(cI[[i]],dI[[i]]), 'pc2')
@@ -216,8 +222,8 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
     rm(i)
     rm(c, cTemp, d, dTemp, k)
 
-    l0 = chunk(inputTextInBitsNumPerm, 2)[[1]]
-    r0 = chunk(inputTextInBitsNumPerm, 2)[[2]]
+    l0 = chunk(msgBlockPerm, 2)[[1]]
+    r0 = chunk(msgBlockPerm, 2)[[2]]
 
     lTemp = l0
     rTemp = r0
@@ -225,7 +231,9 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
     lI = list()
     rI = list()
 
-    ## Se "encode = TRUE" então deve ser Criptografado.
+## ---------------------------------------------------------- ##
+## Se "encode = TRUE" então deve ser Criptografado.           ##
+## ---------------------------------------------------------- ##
     if (encode) {
         for(i in 1:16) {
             l = rTemp
@@ -237,7 +245,10 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
             rTemp = r
             lTemp = l
         }
-    ## Se "encode = FALSE" então deve ser Descriptografado, logo a ordem de aplicação das subchaves deve ser invertidas
+## ---------------------------------------------------------- ##
+## Se "encode = FALSE" então deve ser Descriptografado, logo  ##
+## ordem de aplicação das subchaves deve ser invertidas       ##
+## ---------------------------------------------------------- ##
     } else {
         for(i in 16:1) {
             l = rTemp
@@ -250,16 +261,30 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
             lTemp = l
         }
     }
+## ---------------------------------------------------------- ##
 
     rm(i)
     rm(lTemp, rTemp, l, r)
 
+## ---------------------------------------------------------- ##
+## Inversão dos blocos finais                                 ##
+## ---------------------------------------------------------- ##
+
     l16r16inverted = c(rI[[16]],lI[[16]])
+
+## ---------------------------------------------------------- ##
+## Permutação do bloco invertido com a tabela "permFim"       ##
+## ---------------------------------------------------------- ##   
+
     l16r16invertedPerm = permuteAll(l16r16inverted, 'final')
     l16r16invertedPermRaw = as.raw(l16r16invertedPerm)
     ## View(matrix(l16r16invertedPerm, 8, 8, byrow = TRUE))
-    
-    ## O retorno é diferenciado dependendo da ação. Se é de Criptografia ou Descriptografia.
+
+## ---------------------------------------------------------- ## 
+## O retorno é diferenciado dependendo da ação.               ##
+## Se é de Criptografia ou Descriptografia.                   ##
+## ---------------------------------------------------------- ##
+
     if (encode) {
         return(packBits(l16r16invertedPermRaw, type = c("raw", "integer")))
     } else {
@@ -267,48 +292,43 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
     }
 }
 
-keyInBitsNum = function(key) {
-    keyInRaw = charToRaw(key)
+textToNumericBits = function(text) {
+    return(as.numeric(rawToBits(charToRaw(text))))
+}
 
-    while (length(keyInRaw) %% 8 != 0) {
-        keyInRaw = c(keyInRaw, raw(1))
-    }
-    keyInBits = rawToBits(keyInRaw)
-
-    return(as.numeric(keyInBits))
+rawToNumericBits = function(textRaw) {
+    return(as.numeric(rawToBits(textRaw)))
 }
 
 msgEncrypt = function(msg, key) {
-    msgInRaw = charToRaw(msg)
-    inputTextInRaw = msgInRaw
+    msgInNumBits = textToNumericBits(msg)
+    keyInNumBits = textToNumericBits(key)
 
-    while (length(inputTextInRaw) %% 16 != 0) {
-        inputTextInRaw = c(inputTextInRaw, raw(1))
+    while (length(msgInNumBits) %% 64 != 0) {
+        msgInNumBits = c(msgInNumBits, numeric(1))
     }
-    inputTextInBits = rawToBits(inputTextInRaw)
-    inputTextInBitsNum = as.numeric(inputTextInBits)
-    
-    numBlocks = length(inputTextInBitsNum) / 64
-    blocksInMatrix = matrix(inputTextInBitsNum, numBlocks, 64, byrow = TRUE)
+
+    numBlocks = length(msgInNumBits) / 64
+    blocksInMatrix = matrix(msgInNumBits, numBlocks, 64, byrow = TRUE)
 
     msgCiphered = NULL 
     for(i in 1:numBlocks) {
-        msgCiphered = c(msgCiphered, encodeDecode(blocksInMatrix[i,], key, encode = TRUE))
+        msgCiphered = c(msgCiphered, encodeDecode(blocksInMatrix[i,], keyInNumBits, encode = TRUE))
     }
 
     return(msgCiphered)
 }
 
 msgDecrypt = function(msg, key) {
-    msgInBits = rawToBits(msg)
-    msgInBitsNum = as.numeric(msgInBits)
-    
+    msgInBitsNum = rawToNumericBits(msg)
+    keyInNumBits = textToNumericBits(key)
+
     numBlocks = length(msgInBitsNum) / 64
     blocksInMatrix = matrix(msgInBitsNum, numBlocks, 64, byrow = TRUE)
 
     msgDeciphered = NULL 
     for(i in 1:numBlocks) {
-        msgDeciphered = c(msgDeciphered, encodeDecode(blocksInMatrix[i,], key, encode = FALSE))
+        msgDeciphered = c(msgDeciphered, encodeDecode(blocksInMatrix[i,], keyInNumBits, encode = FALSE))
     }
 
     return(paste(msgDeciphered, collapse = ""))
