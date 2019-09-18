@@ -1,8 +1,14 @@
 source("Constantes.r")
 
-## --------------------------------------------------------------------
-## Funções de Permutação
-## --------------------------------------------------------------------
+## ---------------------------------------------------------- ##
+## Função generica de Permutação                              ##
+## ---------------------------------------------------------- ##
+
+## ---------------------------------------------------------- ##
+## Permuta uma tabela de bits de entrada "data" com a tabela  ##
+## de permutação escolhida dentre as opções: initial, pc1,    ##
+## expperm, pbox, final.                                      ##
+## ---------------------------------------------------------- ##
 
 permuteAll = function(data, opcao) {
     dataRef = NULL
@@ -14,7 +20,7 @@ permuteAll = function(data, opcao) {
             dataRef = pc1 
         }, pc2={
             dataRef = pc2
-        }, expPerm={
+        }, expperm={
             dataRef = expPerm
         }, pbox={
             dataRef = pBox  
@@ -35,11 +41,20 @@ permuteAll = function(data, opcao) {
     return(dataPerm)
 }
 
-## --------------------------------------------------------------------
-## Funções de Apoio
-## --------------------------------------------------------------------
+## ---------------------------------------------------------- ## 
+## Funções de Apoio                                           ##
+## ---------------------------------------------------------- ##
+
+## ---------------------------------------------------------- ##
+## Divide um velor "x" em "n" pedaços                         ##
+## ---------------------------------------------------------- ##
 
 chunk = function(x,n) split(x, cut(seq_along(x), n, labels = FALSE)) 
+
+## ---------------------------------------------------------- ##
+## Função para rotação em valores de 28 bits a partir das     ##
+## subchaves de rotação
+## ---------------------------------------------------------- ##
 
 shifter = function(data, round) {
     rows = 4
@@ -79,6 +94,10 @@ shifter = function(data, round) {
     return(as.vector(t(newMatrix)))
 }
 
+## ---------------------------------------------------------- ##
+## Função Feistel e funções de apoio                          ##
+## ---------------------------------------------------------- ##
+
 xorBit = function(data1, data2) {
     if (length(data1) == length(data2)) {
         dataXOR = c(1:length(data1))
@@ -94,10 +113,6 @@ xorBit = function(data1, data2) {
         return(dataXOR)
     }
 }
-
-## --------------------------------------------------------------------
-## Função-F
-## --------------------------------------------------------------------
 
 getRowSbox = function(data) {
     return((data[1] * 2 ^ 1) + (data[6] * 2 ^ 0))
@@ -144,21 +159,26 @@ resultXORBySbox = function(resultXORmatrix) {
     return(tempResult)
 }
 
-funcF = function(rTemp, kI) {
-    e_rTemp = permuteAll(rTemp, 'expPerm')
+feistel = function(rTemp, kI) {
+    # expansão
+    e_rTemp = permuteAll(rTemp, 'expperm')
 
+    # mistura de chaves usando XOR 
     resultXOR = xorBit(e_rTemp, kI)
     resultXORmatrix = matrix(resultXOR, 8, 6, byrow = TRUE)
 
+    # substituição usando as caixas de substituição "sbox"
     outSbox = resultXORBySbox(resultXORmatrix)
+
+    # permutação usando "pbox"
     outSboxPerm = permuteAll(outSbox, 'pbox')
 
     return(outSboxPerm)
 }
 
-## --------------------------------------------------------------------
-## Criptografia e Descriptografia
-## --------------------------------------------------------------------
+## ---------------------------------------------------------- ##
+## Criptografia e Descriptografia                             ##
+## ---------------------------------------------------------- ##
 
 encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
     inputTextInBitsNumPerm = permuteAll(inputTextInBitsNum, 'initial')
@@ -209,7 +229,7 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
     if (encode) {
         for(i in 1:16) {
             l = rTemp
-            r = xorBit(lTemp, funcF(rTemp, kI[[i]]))
+            r = xorBit(lTemp, feistel(rTemp, kI[[i]]))
 
             lI = c(lI, list(l))
             rI = c(rI, list(r))
@@ -221,7 +241,7 @@ encodeDecode = function(inputTextInBitsNum, key, encode = TRUE) {
     } else {
         for(i in 16:1) {
             l = rTemp
-            r = xorBit(lTemp, funcF(rTemp, kI[[i]]))
+            r = xorBit(lTemp, feistel(rTemp, kI[[i]]))
 
             lI = c(lI, list(l))
             rI = c(rI, list(r))
@@ -293,3 +313,5 @@ msgDecrypt = function(msg, key) {
 
     return(paste(msgDeciphered, collapse = ""))
 }
+
+## ---------------------------------------------------------- ##
