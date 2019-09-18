@@ -1,24 +1,19 @@
-pc1 = c(
-   57, 49, 41, 33, 25, 17,  9,
-    1, 58, 50, 42, 34, 26, 18,
-   10,  2, 59, 51, 43, 35, 27,
-   19, 11,  3, 60, 52, 44, 36,
-   63, 55, 47, 39, 31, 23, 15,
-    7, 62, 54, 46, 38, 30, 22,
-   14,  6, 61, 53, 45, 37, 29,
-   21, 13,  5, 28, 20, 12,  4)
-   
-pc2 = c(
-   14, 17, 11, 24,  1,  5,
-    3, 28, 15,  6, 21, 10,
-   23, 19, 12,  4, 26,  8,
-   16,  7, 27, 20, 13,  2,
-   41, 52, 31, 37, 47, 55,
-   30, 40, 51, 45, 33, 48,
-   44, 49, 39, 56, 34, 53,
-   46, 42, 50, 36, 29, 32)
 
-shifts = c(1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1)
+## ---------------------------------------------------------- ##
+## Tabelas de dados estáticos usadas pelo algoritmo DES.      ##
+## Muitas dessas tabelas são baseadas em permutações de bits, ##
+## em que o índice da matriz corresponde ao bit de saída e o  ##
+## valor indica qual bit da entrada deve ser usado.           ##
+## ---------------------------------------------------------- ##
+
+## ########################################################## ##
+## ############## Permutações de alto nível ################# ##
+## ########################################################## ##
+
+## ---------------------------------------------------------- ##
+## Permutação Inicial: o bloco de mensagens é permutado       ##
+## por essa permutação no início do algoritmo                 ##
+## ---------------------------------------------------------- ##
 
 permIni = c(58, 50, 42, 34, 26, 18, 10,  2,
     60, 52, 44, 36, 28, 20, 12,  4,
@@ -29,6 +24,11 @@ permIni = c(58, 50, 42, 34, 26, 18, 10,  2,
     61, 53, 45, 37, 29, 21, 13,  5,
     63, 55, 47, 39, 31, 23, 15,  7)
 
+## ---------------------------------------------------------- ##
+## Permutação Final: o resultado final é permutado por essa   ##
+## permutação para gerar o bloco final de texto cifrado       ##
+## ---------------------------------------------------------- ##
+
 permFim = c(40,  8, 48, 16, 56, 24, 64, 32,
     39,  7, 47, 15, 55, 23, 63, 31,
     38,  6, 46, 14, 54, 22, 62, 30,
@@ -38,7 +38,17 @@ permFim = c(40,  8, 48, 16, 56, 24, 64, 32,
     34,  2, 42, 10, 50, 18, 58, 26,
     33,  1, 41,  9, 49, 17, 57, 25)
 
-dBox = c(
+## ########################################################## ##
+## ############## Permutações de alto nível ################# ##
+## ########################################################## ##
+
+## ---------------------------------------------------------- ##
+## Permutação de Expansão: a função Feistel começa aplicando  ##
+## essa permutação em seu meio bloco de entrada de 32 bits    ##
+## para criar um valor "expandido" de 48 bits.                ##
+## ---------------------------------------------------------- ##
+
+expPerm = c(
     32,  1,  2,  3,  4,  5,
      4,  5,  6,  7,  8,  9, 
      8,  9, 10, 11, 12, 13,
@@ -48,15 +58,15 @@ dBox = c(
     24, 25, 26, 27, 28, 29,
     28, 29, 30, 31, 32,  1
 )
-pBox = c(
-    16,  7, 20, 21, 
-    29, 12, 28, 17, 
-     1, 15, 23, 26, 
-     5, 18, 31, 10,
-     2,  8, 24, 14, 
-    32, 27,  3,  9,
-    19, 13, 30,  6, 
-    22, 11,  4, 25)
+
+## ---------------------------------------------------------- ##
+## Caixas de Substituição: uma etapa crucial na função        ##
+## Feistel é executar substituições de bits de acordo com     ##
+## esta tabela. Um valor de 48 bits é divido em seções de 6   ##
+## bits e cada seção é permutada em um valor de 6 bits        ##
+## diferente, de acordo com essas oito tabelas.               ##
+## (Uma tabela para cada seção)                               ##
+## ---------------------------------------------------------- ##
 
 sBox1l0 = c(14,  4, 13,  1,  2, 15, 11,  8,  3, 10,  6, 12,  5,  9,  0,  7)
 sBox1l1 = c( 0, 15,  7,  4, 14,  2, 13,  1, 10,  6, 12, 11,  9,  5,  3,  8)
@@ -136,8 +146,72 @@ rm(sBox8l0, sBox8l1, sBox8l2, sBox8l3)
 rm(sBox1, sBox2, sBox3, sBox4, sBox5, sBox6, sBox7, sBox8)
 
 ## rm -> remove objetos
-## sBox[[1]][[1]][[1]] -> pega o primeiro elemento da primeira lista que está dentro da primeira lista
+## sBox[[1]][[1]][[1]] -> pega o primeiro elemento da primeira lista que está
+## dentro da primeira lista
 
-## Permutation
-## ExpansionPermutation
-## PermutedChoice
+## ---------------------------------------------------------- ##
+## Permutação "P": a função Feistel termina aplicando essa    ##
+## permutação de 32 bits ao resultado da substituição da      ##
+## caixa S, a fim de distribuir os bits de saída por 6 caixas ##
+## S diferentes na próxima rodada
+## ---------------------------------------------------------- ##
+
+pBox = c(
+    16,  7, 20, 21, 
+    29, 12, 28, 17, 
+     1, 15, 23, 26, 
+     5, 18, 31, 10,
+     2,  8, 24, 14, 
+    32, 27,  3,  9,
+    19, 13, 30,  6, 
+    22, 11,  4, 25)
+
+## ########################################################## ##
+## #### Permutações relacionadas à geração de subchave ###### ##
+## ########################################################## ##
+
+## ---------------------------------------------------------- ##
+## Permutação "PC1": a chave de 64 bits fornecida é permutada ##
+## de acordo com esta tabela em uma chave de 56 bits. É por   ##
+## isso que o DES é apenas um algoritmo de 56 bits, mesmo que ##
+## você forneça 64 bits do material principal                 ##
+## ---------------------------------------------------------- ##
+
+pc1 = c(
+   57, 49, 41, 33, 25, 17,  9,
+    1, 58, 50, 42, 34, 26, 18,
+   10,  2, 59, 51, 43, 35, 27,
+   19, 11,  3, 60, 52, 44, 36,
+   63, 55, 47, 39, 31, 23, 15,
+    7, 62, 54, 46, 38, 30, 22,
+   14,  6, 61, 53, 45, 37, 29,
+   21, 13,  5, 28, 20, 12,  4)
+
+## ---------------------------------------------------------- ##
+## Permutação "PC2": o processo de geração de subchae aplica  ##
+## essa permutação para transformar seu valor de chave de     ##
+## 56 bits em execução no conjunto final de 16 subchaves      ##
+## de 48 bits                                                 ##
+## ---------------------------------------------------------- ##
+
+pc2 = c(
+   14, 17, 11, 24,  1,  5,
+    3, 28, 15,  6, 21, 10,
+   23, 19, 12,  4, 26,  8,
+   16,  7, 27, 20, 13,  2,
+   41, 52, 31, 37, 47, 55,
+   30, 40, 51, 45, 33, 48,
+   44, 49, 39, 56, 34, 53,
+   46, 42, 50, 36, 29, 32)
+
+## ---------------------------------------------------------- ##
+## Subchave de Rotação: parte do processo de geração de       ##
+## subchave envolve rotacionar certas seções de bits do       ##
+## material principal por um ou dois bits para esquerda. Esta ##
+## tabela especifica quantos bits devem ser rotacionados para ##
+## a esquerda para uma das 16 etapas                          ##
+## ---------------------------------------------------------- ##
+
+shifts = c(1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1)
+
+## ---------------------------------------------------------- ##

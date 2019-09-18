@@ -14,8 +14,8 @@ permuteAll = function(data, opcao) {
             dataRef = pc1 
         }, pc2={
             dataRef = pc2
-        }, dbox={
-            dataRef = dBox
+        }, expPerm={
+            dataRef = expPerm
         }, pbox={
             dataRef = pBox  
         }, final={
@@ -145,7 +145,7 @@ resultXORBySbox = function(resultXORmatrix) {
 }
 
 funcF = function(rTemp, kI) {
-    e_rTemp = permuteAll(rTemp, 'dbox')
+    e_rTemp = permuteAll(rTemp, 'expPerm')
 
     resultXOR = xorBit(e_rTemp, kI)
     resultXORmatrix = matrix(resultXOR, 8, 6, byrow = TRUE)
